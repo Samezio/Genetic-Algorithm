@@ -1,0 +1,79 @@
+clear all
+close all
+clc
+% Inpute Variables and Limits
+x = linspace(0,0.6,150);
+y = linspace(0,0.6,150);
+ub = [0.6;0.6];
+lb = [0;0];
+
+%Inpute for Stalagmite
+[xx yy] = meshgrid(x,y);
+
+%Accuracy Needed
+acc = 0.0001;
+% Stalagmite Fuction
+for i = 1:length(xx)
+    for j = 1:length(yy)
+        input_vector(1) = xx(i,j);
+        input_vector(2) = yy(i,j);
+        f(i,j) = stalagmite(input_vector);
+    end
+end
+
+
+size = 200;
+num_cases = 100;
+tic
+while 1
+
+size
+options = optimoptions('ga');
+options = optimoptions(options,'populationsize',size);
+    % Iterations
+    for i = 1:num_cases
+        [inputs,fopt(i)] = ga(@stalagmite,2,[],[],[],[],lb,ub,[],[],options);
+         xopt(i) = inputs(1);
+         yopt(i) = inputs(2);
+         a(i) = fopt(i);
+    end
+    
+    % Differnce Between the Optimal values for iterations 
+    for i=1:num_cases
+        for j=1:num_cases
+            diff(i,j) = a(i)-a(j);
+            p= max(diff);
+            o = min(diff);
+        end
+    end
+    
+    %Checking Accuracy
+    if ((p<acc) & (o>(-acc)))
+        break
+    end
+    
+    % Update Population Size
+    size = size +25;
+    
+    study_time =toc
+end
+% Results
+fopt(100)
+inputs
+
+%Plotting
+
+%Plotting 3D Stalagmite func and optimal value points
+figure(1)
+hold on
+surface(xx,yy,f)
+shading interp
+plot3(xopt,yopt,fopt,'marker','o','markersize',5,'markerfacecolor','r')
+xlabel('X Axis')
+ylabel('Y Axis')
+%Plotting pattern of Optimal Values and Population Size in Iterations 
+figure(2)
+plot(fopt)
+xlabel('Iteration')
+ylabel('Optimum Value')
+
